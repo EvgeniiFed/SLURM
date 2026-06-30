@@ -1,0 +1,52 @@
+# LiteLLM Proxy Config — без БД, с fallback + OpenRouter
+
+model_list:
+  # === Primary: DeepSeek через AI Router ===
+  - model_name: agent-llm
+    litellm_params:
+      model: openai/deepseek/deepseek-v4-flash
+      api_key: os.environ/AIROUTER_API_KEY
+      api_base: https://api.ai-router.app/v1
+    fallback_models:
+      - model_name: agent-llm-fallback
+
+  # === Fallback 1: DeepSeek Chat (AI Router) ===
+  - model_name: agent-llm-fallback
+    litellm_params:
+      model: openai/deepseek/deepseek-chat
+      api_key: os.environ/AIROUTER_API_KEY
+      api_base: https://api.ai-router.app/v1
+    fallback_models:
+      - model_name: agent-llm-openrouter
+
+  # === Fallback 2: OpenRouter (GPT-4o mini) ===
+  - model_name: agent-llm-openrouter
+    litellm_params:
+      model: openrouter/openai/gpt-4o-mini
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+    fallback_models:
+      - model_name: agent-llm-emergency
+
+  # === Emergency: OpenRouter (DeepSeek free) ===
+  - model_name: agent-llm-emergency
+    litellm_params:
+      model: openrouter/deepseek/deepseek-chat
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+
+  # === Для тестов: прямая модель через OpenRouter ===
+  - model_name: openrouter-direct
+    litellm_params:
+      model: openrouter/openai/gpt-4o-mini
+      api_key: os.environ/OPENROUTER_API_KEY
+      api_base: https://openrouter.ai/api/v1
+
+general_settings:
+  master_key: sk-litellm-master-key-123
+
+router_settings:
+  routing_strategy: simple-shuffle
+  timeout: 30
+  num_retries: 2
+  allowed_fails: 1
